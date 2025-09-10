@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'agent-1'}
+    agent { label 'agent-2'}
     
     tools {
         maven 'Maven-3.9.11'
@@ -7,11 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Git Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/bernardofosu/Boardgame-with-Jenkins.git'
-            }
-        }
         
         stage('Compile') {
             steps {
