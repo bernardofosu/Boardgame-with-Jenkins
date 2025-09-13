@@ -51,3 +51,65 @@ This web application displays lists of board games and their reviews. While anyo
   - username: bugs    |     password: bunny (user role)
   - username: daffy   |     password: duck  (manager role)
 5. You can also sign-up as a new user and customize your role to play with the application! 😊
+
+```j
+
+pipeline {
+  agent any
+
+  tools {
+    maven 'Maven-3.9.11'      // Jenkins > Global Tool Config names
+    jdk   'jdk17'
+  }
+
+  environment {
+    MAVEN_OPTS = '-Dmaven.test.failure.ignore=false'
+  }
+
+  stages {
+
+    stage('Git Checkout') {
+      steps {
+         git branch: 'main', url: 'https://github.com/bernardofosu/Boardgame-with-Jenkins.git'
+        // If the repo is private, add: credentialsId: 'github-creds-id'
+      }
+    }
+
+    stage('Test') {
+      when {
+        // run tests only when this file changed in the SCM change set
+        changeset pattern: 'test.txt', comparator: 'GLOB'
+      }
+      steps {
+        sh 'mvn -B -ntp test'
+      }
+    }
+
+    stage('Build') {
+      steps {
+        sh 'mvn -B -ntp -DskipTests package'
+      }
+    }
+
+    stage('Archive') {
+      steps {
+        archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+      }
+    }
+  }
+
+  post {
+    always {
+      junit 'target/surefire-reports/*.xml'
+      cleanWs()
+    }
+    success {
+      echo '✅ Build succeeded'
+    }
+    failure {
+      echo '❌ Build failed – check logs and test reports'
+    }
+  }
+}
+
+```
